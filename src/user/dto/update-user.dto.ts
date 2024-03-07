@@ -1,9 +1,3 @@
-import { IsString } from 'class-validator';
+import { CreateUserDto } from './create-user.dto';
 
-export class UpdateUserDto {
-  @IsString()
-  email: string;
-
-  @IsString()
-  password: string;
-}
+export class UpdateUserDto extends CreateUserDto {}

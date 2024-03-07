@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import { User } from './entities/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -12,19 +13,40 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto) {
+    const cryptedPassword = await bcrypt.hash(createUserDto.password, 10);
+    createUserDto.password = cryptedPassword;
+
     return this.userRepository.save(createUserDto);
   }
 
-  findAll() {
-    return this.userRepository.find();
+  async findAll() {
+    const users = await this.userRepository.find();
+    if (users.length === 0) {
+      return [];
+    }
+
+    return users.map((user) => ({
+      ['id']: user.id,
+      ['username']: user.username,
+    }));
   }
 
-  findOne(id: number) {
-    return this.userRepository.findOneBy({ id });
+  async findOne(id: number) {
+    const user = await this.userRepository.findBy({ id });
+    const mappedUser = user.map((user) => ({
+      ['id']: user.id,
+      ['username']: user.username,
+      ['last_access']: user.last_access,
+    }));
+
+    return mappedUser.pop() ?? [];
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const hashedPassword = await bcrypt.hash(updateUserDto.password, 10);
+    updateUserDto.password = hashedPassword;
+
     return this.userRepository.update(id, updateUserDto);
   }
 
@@ -32,10 +54,13 @@ export class UserService {
     return this.userRepository.delete(id);
   }
 
-  async removeAll() {
-    const users = await this.findAll();
-    for (let index = 0; index < users.length; index++) {
-      this.userRepository.delete(users[index]);
-    }
+  findOneByUsername(username: string) {
+    return this.userRepository.findOneBy({ username });
+  }
+
+  updateLastAccess(userId: number) {
+    return this.userRepository.update(userId, {
+      last_access: Math.floor(Date.now() / 1000),
+    });
   }
 }
