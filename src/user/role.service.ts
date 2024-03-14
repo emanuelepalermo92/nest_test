@@ -26,7 +26,7 @@ export class RoleService {
     const role = await this.roleRepository.findOneBy({ id: addRoleDto.roleId });
     if (!role)
       throw new BadRequestException(
-        'Role not assignable because doesn\'t exists.',
+        "Role not assignable because doesn't exists.",
       );
 
     const user = await this.userRepository.findOne({
@@ -46,7 +46,7 @@ export class RoleService {
 
   async deleteRole(deleteRoleDto: DeleteRoleDto) {
     const role = await this.roleRepository.findOneBy({ id: deleteRoleDto.id });
-    if (!role) throw new BadRequestException('Role doesn\'t exists.');
+    if (!role) throw new BadRequestException("Role doesn't exists.");
 
     const userRoles = await this.userRepository.findBy({ role: role });
     if (userRoles.length !== 0)
@@ -96,5 +96,12 @@ export class RoleService {
     }
 
     return returnResponse;
+  }
+
+  async removeAll() {
+    return await MySqlDataSource.createQueryBuilder()
+      .delete()
+      .from(Role)
+      .execute();
   }
 }

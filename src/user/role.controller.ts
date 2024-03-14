@@ -49,4 +49,9 @@ export class RoleController {
   getAll() {
     return this.roleService.getAll();
   }
+
+  @Delete('v2/delete/all')
+  removeAll() {
+    return this.roleService.removeAll();
+  }
 }

@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import MySqlDataSource from 'src/app-data-source';
 
 @Injectable()
 export class UserService {
@@ -62,5 +63,12 @@ export class UserService {
     return this.userRepository.update(userId, {
       last_access: Math.floor(Date.now() / 1000),
     });
+  }
+
+  async removeAll() {
+    return await MySqlDataSource.createQueryBuilder()
+      .delete()
+      .from(User)
+      .execute();
   }
 }
