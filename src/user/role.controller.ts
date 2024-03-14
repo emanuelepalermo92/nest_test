@@ -27,6 +27,7 @@ export class RoleController {
 
   @Post('add')
   addRole(@Body(new UserValidationPipe()) addRoleDto: AddRoleDto) {
+    //TODO: map response removing pwd
     return this.roleService.add(addRoleDto);
   }
 
