@@ -16,5 +16,5 @@ export class User {
   last_access: number;
 
   @ManyToOne(() => Role, (role) => role.users)
-  role: Role;
+  role: Role | null;
 }

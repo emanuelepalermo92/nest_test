@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Delete, Param, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Delete,
+  Param,
+  Patch,
+  Get,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserValidationPipe } from './pipes/user.validation.pipes';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -32,5 +40,13 @@ export class RoleController {
     return this.roleService.updateRole(Number(userId), Number(roleId));
   }
 
-  //TODO: remove role from user, get All Roles and count by user
+  @Post('/remove-from-user/:userId')
+  removeRole(@Param('userId') userId: string) {
+    return this.roleService.removeRole(Number(userId));
+  }
+
+  @Get('all')
+  getAll() {
+    return this.roleService.getAll();
+  }
 }

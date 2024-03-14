@@ -7,6 +7,7 @@ import { Role } from './entities/role.entity';
 import { AddRoleDto } from './dto/add-role.dto';
 import MySqlDataSource from 'src/app-data-source';
 import { DeleteRoleDto } from './dto/delete-role.dto';
+import { AllRole } from './interfaces/all.role';
 
 @Injectable()
 export class RoleService {
@@ -25,7 +26,7 @@ export class RoleService {
     const role = await this.roleRepository.findOneBy({ id: addRoleDto.roleId });
     if (!role)
       throw new BadRequestException(
-        "Role not assignable because doesn't exists.",
+        'Role not assignable because doesn\'t exists.',
       );
 
     const user = await this.userRepository.findOne({
@@ -45,11 +46,11 @@ export class RoleService {
 
   async deleteRole(deleteRoleDto: DeleteRoleDto) {
     const role = await this.roleRepository.findOneBy({ id: deleteRoleDto.id });
-    if (!role) throw new BadRequestException("Role doesn't exists.");
+    if (!role) throw new BadRequestException('Role doesn\'t exists.');
 
     const userRoles = await this.userRepository.findBy({ role: role });
     if (userRoles.length !== 0)
-      throw new BadRequestException('There users that having this role.');
+      throw new BadRequestException('There are users having this role.');
 
     return this.roleRepository.delete(role.id);
   }
@@ -65,5 +66,35 @@ export class RoleService {
 
     user.role = role;
     return await MySqlDataSource.manager.save(user);
+  }
+
+  async removeRole(userId: number) {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) throw new BadRequestException("User doesn't exists");
+
+    user.role = null;
+    return await MySqlDataSource.manager.save(user);
+  }
+
+  async getAll() {
+    const result = await MySqlDataSource.createQueryBuilder()
+      .select('role.id, role.roleName, COUNT(user.id) as users_count')
+      .from(Role, 'role')
+      .leftJoin('role.users', 'user')
+      .groupBy('role.roleName')
+      .getRawMany();
+
+    const returnResponse = [];
+    for (let index = 0; index < result.length; index++) {
+      const allRole: AllRole = {
+        roleId: result[index].id,
+        roleName: result[index].roleName,
+        users_count: Number(result[index].users_count),
+      };
+
+      returnResponse.push(allRole);
+    }
+
+    return returnResponse;
   }
 }
