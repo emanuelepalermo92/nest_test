@@ -41,7 +41,13 @@ export class RoleService {
       );
 
     user.role = role;
-    return await MySqlDataSource.manager.save(user);
+    const updatedUser = await MySqlDataSource.manager.save(user);
+    return {
+      id: updatedUser.id,
+      username: updatedUser.username,
+      role: updatedUser.role,
+      last_access: updatedUser.last_access,
+    };
   }
 
   async deleteRole(deleteRoleDto: DeleteRoleDto) {

@@ -14,7 +14,6 @@ export class AuthService {
   ) {}
 
   async validateUser({ username, password }: AuthPayloadDto) {
-    //TODO: add relation
     const user = await this.userService.findOneByUsername(username);
     if (!user) return null;
 
@@ -31,7 +30,7 @@ export class AuthService {
     const LoginResponse: LoginResponse = {
       userId: user.id,
       username: user.username,
-      role: user.role?.roleName,
+      role: user.role?.roleName ?? null,
       token: this.jwtService.sign(JwtPayload),
     };
 
